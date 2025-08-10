@@ -1,0 +1,25 @@
+{
+  "name": "content-collab",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Private, minimal Collaboration App (DE) for Content Planning, Review, and Captioning",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n WEB,API -c \"bgBlue.white,bgGreen.white\" \"npm:dev:web\" \"npm:dev:server\"",
+    "dev:web": "npm --workspace=@app/web run dev",
+    "dev:server": "npm --workspace=@app/server run dev",
+    "build": "npm --workspace=@app/web run build && npm --workspace=@app/server run build",
+    "start": "npm --workspace=@app/server run start",
+    "lint": "echo \"(Lint wird später hinzugefügt)\"",
+    "postinstall": "npm --workspace=@app/server run prisma:generate || exit 0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.2.1",
+    "@types/react": "^19.1.9",
+    "@types/react-dom": "^19.1.7",
+    "concurrently": "^9.0.0"
+  }
+}

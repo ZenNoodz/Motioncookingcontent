@@ -1,0 +1,161 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// PostgreSQL with Supabase
+// Optimized for production deployment with better JSON support
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String?
+  passwordHash String
+  role         String    @default("collaborator")
+  createdAt    DateTime  @default(now())
+  projects     Project[] @relation("OwnerProjects")
+  comments     Comment[]
+}
+
+model Project {
+  id           String        @id @default(cuid())
+  name         String
+  description  String?
+  color        String?
+  createdById  String
+  createdBy    User          @relation("OwnerProjects", fields: [createdById], references: [id])
+  createdAt    DateTime      @default(now())
+  assets       Asset[]
+  contentItems ContentItem[]
+  boardColumns BoardColumn[]
+}
+
+model Asset {
+  id           String        @id @default(cuid())
+  projectId    String
+  project      Project       @relation(fields: [projectId], references: [id])
+  type         String        // "video" | "image"
+  pathOriginal String
+  pathPreview  String?
+  thumbnail    String?       // single thumbnail path for MVP
+  durationMs   Int?
+  width        Int?
+  height       Int?
+  sizeBytes    Int
+  createdAt    DateTime      @default(now())
+  versions     AssetVersion[]
+  comments     Comment[]
+  contentItems ContentItem[]
+  tagRelations TagRelation[]
+}
+
+model AssetVersion {
+  id            String   @id @default(cuid())
+  assetId       String
+  asset         Asset    @relation(fields: [assetId], references: [id])
+  versionNumber Int
+  pathOriginal  String
+  pathPreview   String?
+  thumbnail     String?  // single thumbnail path for MVP
+  createdAt     DateTime @default(now())
+}
+
+model Comment {
+  id         String    @id @default(cuid())
+  assetId    String
+  asset      Asset     @relation(fields: [assetId], references: [id])
+  parentId   String?
+  parent     Comment?  @relation("CommentThread", fields: [parentId], references: [id])
+  replies    Comment[] @relation("CommentThread")
+  authorId   String
+  author     User      @relation(fields: [authorId], references: [id])
+  body       String
+  timecodeMs Int?
+  resolved   Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+}
+
+model ContentItem {
+  id              String        @id @default(cuid())
+  projectId       String
+  project         Project       @relation(fields: [projectId], references: [id])
+  assetId         String?
+  asset           Asset?        @relation(fields: [assetId], references: [id])
+  title           String
+  status          String        @default("IN_PROGRESS") // "IN_PROGRESS" | "NEEDS_REVIEW" | "APPROVED"
+  plannedDate     DateTime?
+  platformTargets String?       // CSV, e.g. "instagram,tiktok"
+  brief           String?
+  createdAt       DateTime      @default(now())
+  captions        CaptionDraft[]
+  boardCards      BoardCard[]
+  links           Link[]
+  tagRelations    TagRelation[]
+}
+
+model CaptionDraft {
+  id            String      @id @default(cuid())
+  contentItemId String
+  contentItem   ContentItem @relation(fields: [contentItemId], references: [id])
+  platform      String      // "instagram" | "tiktok" | "youtube"
+  text          String
+  hashtags      String?     // CSV for MVP
+  links         String?     // CSV or JSON string for MVP
+  updatedAt     DateTime    @updatedAt
+  createdAt     DateTime    @default(now())
+
+  @@unique([contentItemId, platform])
+}
+
+model BoardColumn {
+  id        String      @id @default(cuid())
+  projectId String
+  project   Project     @relation(fields: [projectId], references: [id])
+  name      String
+  order     Int
+  cards     BoardCard[]
+}
+
+model BoardCard {
+  id            String       @id @default(cuid())
+  columnId      String
+  column        BoardColumn  @relation(fields: [columnId], references: [id])
+  contentItemId String
+  contentItem   ContentItem  @relation(fields: [contentItemId], references: [id])
+  order         Int
+
+  @@unique([columnId, contentItemId])
+}
+
+model Tag {
+  id           String        @id @default(cuid())
+  name         String        @unique
+  color        String?
+  createdAt    DateTime      @default(now())
+  tagRelations TagRelation[]
+}
+
+model TagRelation {
+  id            String       @id @default(cuid())
+  tagId         String
+  tag           Tag          @relation(fields: [tagId], references: [id])
+  assetId       String?
+  asset         Asset?       @relation(fields: [assetId], references: [id])
+  contentItemId String?
+  contentItem   ContentItem? @relation(fields: [contentItemId], references: [id])
+
+  @@index([assetId])
+  @@index([contentItemId])
+}
+
+model Link {
+  id            String      @id @default(cuid())
+  contentItemId String
+  contentItem   ContentItem @relation(fields: [contentItemId], references: [id])
+  title         String
+  url           String
+}
