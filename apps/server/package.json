@@ -22,15 +22,15 @@
     "@fastify/cors": "^8.5.0",
     "@fastify/multipart": "^8.3.1",
     "@prisma/client": "^5.16.2",
+    "@types/node": "^20.14.10",
     "dotenv": "^16.4.5",
     "fastify": "^4.28.1",
     "mysql2": "^3.14.3",
+    "typescript": "^5.5.4",
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@types/node": "^20.14.10",
     "prisma": "^5.16.2",
-    "tsx": "^4.19.2",
-    "typescript": "^5.5.4"
+    "tsx": "^4.19.2"
   }
 }

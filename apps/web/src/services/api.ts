@@ -1,6 +1,6 @@
 // Dynamic API URL based on environment
 const API_BASE_URL = (import.meta as any).env?.MODE === 'production'
-  ? 'https://your-railway-app.railway.app' // Will be replaced with actual Railway URL
+  ? 'https://motioncookingcontent.onrender.com' // Render deployment URL
   : 'http://localhost:4000';
 
 export interface ContentItem {
